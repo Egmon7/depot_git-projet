@@ -16,10 +16,12 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
-    root.classList.add(theme);
+    root.classList.add("light");
     // Clean up any existing theme preference
     localStorage.removeItem("legislativeApp_theme");
-  }, [theme]);
+    // Ensure body has proper background
+    document.body.style.backgroundColor = "white";
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme }}>{children}</ThemeContext.Provider>
