@@ -124,15 +124,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigationItems = getNavigationItems();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+      <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex items-center">
-                <Scale className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                <span className="ml-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <Scale className="h-8 w-8 text-blue-600" />
+                <span className="ml-3 text-xl font-semibold text-gray-900">
                   Assemblée Législative
                 </span>
               </div>
@@ -172,10 +172,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                      <div className="text-sm font-medium dark:text-gray-100">
+                      <div className="text-sm font-medium">
                         {user?.firstName} {user?.lastName}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500">
                         {getRoleDisplayName(user?.role!)}
                       </div>
                     </div>
