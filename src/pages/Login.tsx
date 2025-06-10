@@ -49,17 +49,21 @@ const Login = () => {
   ];
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 relative"
-      style={{
-        backgroundImage: 'url("/palais-du-peuple.jpg")',
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900"
+        style={{
+          backgroundImage: 'url("/palais-du-peuple.jpg")',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundBlendMode: "overlay",
+        }}
+      ></div>
+
       {/* Overlay pour améliorer la lisibilité */}
-      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       <div className="w-full max-w-md space-y-6 relative z-10">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
