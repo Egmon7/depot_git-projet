@@ -49,21 +49,31 @@ const Login = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
-      <div className="w-full max-w-md space-y-6">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 relative"
+      style={{
+        backgroundImage: 'url("/palais-du-peuple.jpg")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Overlay pour améliorer la lisibilité */}
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+      <div className="w-full max-w-md space-y-6 relative z-10">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
             <Scale className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-white drop-shadow-lg">
             Assemblée Législative
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-100 mt-2 drop-shadow-md">
             Système de gestion du processus législatif
           </p>
         </div>
 
-        <Card>
+        <Card className="backdrop-blur-sm bg-white/95 shadow-2xl border-0">
           <CardHeader>
             <CardTitle>Connexion</CardTitle>
             <CardDescription>
@@ -110,7 +120,7 @@ const Login = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm bg-white/95 shadow-2xl border-0">
           <CardHeader>
             <CardTitle className="text-lg">Comptes de démonstration</CardTitle>
             <CardDescription>
