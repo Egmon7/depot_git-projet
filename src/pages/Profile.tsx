@@ -85,10 +85,8 @@ const Profile = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-            Mon profil
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900">Mon profil</h1>
+          <p className="text-gray-600 mt-1">
             Gérez vos informations personnelles et préférences
           </p>
         </div>
@@ -194,7 +192,7 @@ const Profile = () => {
                     id="role"
                     value={getRoleDisplayName(user.role)}
                     disabled
-                    className="bg-gray-50 dark:bg-gray-800"
+                    className="bg-gray-50"
                   />
                 </div>
 
@@ -319,7 +317,7 @@ const Profile = () => {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm font-medium">ID Utilisateur</p>
-                <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                <code className="text-xs bg-gray-100 px-2 py-1 rounded">
                   {user.id}
                 </code>
               </div>
