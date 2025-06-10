@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
+
 import {
   Card,
   CardContent,
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
+
 import { Separator } from "@/components/ui/separator";
 import {
   User,
@@ -22,8 +22,6 @@ import {
   Users,
   ArrowLeft,
   Settings,
-  Moon,
-  Sun,
   Shield,
   Calendar,
 } from "lucide-react";
@@ -34,7 +32,7 @@ import { fr } from "date-fns/locale";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -319,28 +317,6 @@ const Profile = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {theme === "dark" ? (
-                    <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                  ) : (
-                    <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                  )}
-                  <div>
-                    <p className="text-sm font-medium">Mode sombre</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Activer le thème sombre
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={toggleTheme}
-                />
-              </div>
-
-              <Separator />
-
               <div className="space-y-2">
                 <p className="text-sm font-medium">ID Utilisateur</p>
                 <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
