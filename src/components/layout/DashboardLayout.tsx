@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLegislative } from "@/contexts/LegislativeContext";
-import { useTheme } from "@/contexts/ThemeContext";
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,8 +25,6 @@ import {
   Vote,
   Calendar,
   BarChart3,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getRoleDisplayName } from "@/utils/permissions";
@@ -38,7 +36,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const { getUnreadNotifications } = useLegislative();
-  const { theme, toggleTheme } = useTheme();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -192,14 +190,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     <User className="mr-2 h-4 w-4" />
                     Profil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={toggleTheme}>
-                    {theme === "dark" ? (
-                      <Sun className="mr-2 h-4 w-4" />
-                    ) : (
-                      <Moon className="mr-2 h-4 w-4" />
-                    )}
-                    {theme === "dark" ? "Mode clair" : "Mode sombre"}
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
                     Paramètres
