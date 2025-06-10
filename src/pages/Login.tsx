@@ -52,13 +52,14 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center px-4 relative">
       {/* Background Image */}
       <div
-        className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 transition-all duration-500"
+        className="absolute inset-0 transition-all duration-500"
         style={{
           backgroundImage:
-            'url("/palais-du-peuple.jpg"), linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1e3a8a 100%)',
-          backgroundSize: "cover, cover",
-          backgroundPosition: "center, center",
-          backgroundRepeat: "no-repeat, no-repeat",
+            'url("https://images.unsplash.com/photo-1555599807-3bf4de7a6731?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80")',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "fixed",
         }}
       ></div>
 
