@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLegislative } from "@/contexts/LegislativeContext";
-import { useTheme } from "@/contexts/ThemeContext";
+
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,8 +25,6 @@ import {
   Vote,
   Calendar,
   BarChart3,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getRoleDisplayName } from "@/utils/permissions";
@@ -38,7 +36,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const { getUnreadNotifications } = useLegislative();
-  const { theme, toggleTheme } = useTheme();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -126,15 +124,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigationItems = getNavigationItems();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+      <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex items-center">
-                <Scale className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                <span className="ml-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+                <Scale className="h-8 w-8 text-blue-600" />
+                <span className="ml-3 text-xl font-semibold text-gray-900">
                   Assemblée Législative
                 </span>
               </div>
@@ -174,10 +172,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                      <div className="text-sm font-medium dark:text-gray-100">
+                      <div className="text-sm font-medium">
                         {user?.firstName} {user?.lastName}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500">
                         {getRoleDisplayName(user?.role!)}
                       </div>
                     </div>
@@ -192,14 +190,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     <User className="mr-2 h-4 w-4" />
                     Profil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={toggleTheme}>
-                    {theme === "dark" ? (
-                      <Sun className="mr-2 h-4 w-4" />
-                    ) : (
-                      <Moon className="mr-2 h-4 w-4" />
-                    )}
-                    {theme === "dark" ? "Mode clair" : "Mode sombre"}
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
                     Paramètres
