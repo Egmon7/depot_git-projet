@@ -49,36 +49,21 @@ const Login = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 transition-all duration-500"
-        style={{
-          backgroundImage:
-            'url("https://images.unsplash.com/photo-1555599807-3bf4de7a6731?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80")',
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundAttachment: "fixed",
-        }}
-      ></div>
-
-      {/* Overlay pour améliorer la lisibilité */}
-      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-      <div className="w-full max-w-md space-y-6 relative z-10">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
             <Scale className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white drop-shadow-lg">
+          <h1 className="text-3xl font-bold text-gray-900">
             Assemblée Législative
           </h1>
-          <p className="text-gray-100 mt-2 drop-shadow-md">
+          <p className="text-gray-600 mt-2">
             Système de gestion du processus législatif
           </p>
         </div>
 
-        <Card className="backdrop-blur-sm bg-white/95 shadow-2xl border-0">
+        <Card>
           <CardHeader>
             <CardTitle>Connexion</CardTitle>
             <CardDescription>
@@ -125,7 +110,7 @@ const Login = () => {
           </CardContent>
         </Card>
 
-        <Card className="backdrop-blur-sm bg-white/95 shadow-2xl border-0">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg">Comptes de démonstration</CardTitle>
             <CardDescription>
