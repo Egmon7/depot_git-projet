@@ -16,7 +16,6 @@ import {
   Plus,
   Clock,
   CheckCircle,
-  XCircle,
   Vote,
   TrendingUp,
   Calendar,

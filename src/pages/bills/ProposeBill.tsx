@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -27,16 +26,13 @@ import { toast } from "@/hooks/use-toast";
 const ProposeBill = () => {
   const { user } = useAuth();
   const { proposeBill } = useLegislative();
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     title: "",
     subject: "",
     motives: "",
   });
-  const [attachments, setAttachments] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -86,7 +82,6 @@ const ProposeBill = () => {
     }
 
     setIsSubmitting(true);
-
     try {
       // Convert files to attachment objects (in real app, would upload to server)
       const fileAttachments = attachments.map((file, index) => ({
@@ -103,7 +98,6 @@ const ProposeBill = () => {
         motives: formData.motives.trim(),
         attachments: fileAttachments,
       });
-
       toast({
         title: "Proposition déposée",
         description:
@@ -124,7 +118,6 @@ const ProposeBill = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center space-x-4">
         <Button
           variant="outline"
@@ -178,12 +171,6 @@ const ProposeBill = () => {
                 placeholder="Ex: Loi sur la protection de l'environnement en milieu urbain"
                 className={errors.title ? "border-red-500" : ""}
               />
-              {errors.title && (
-                <p className="text-sm text-red-600">{errors.title}</p>
-              )}
-              <p className="text-xs text-gray-600">
-                {formData.title.length}/200 caractères
-              </p>
             </div>
 
             {/* Subject */}
@@ -196,9 +183,6 @@ const ProposeBill = () => {
                 placeholder="Ex: Environnement, Éducation, Santé, Justice..."
                 className={errors.subject ? "border-red-500" : ""}
               />
-              {errors.subject && (
-                <p className="text-sm text-red-600">{errors.subject}</p>
-              )}
             </div>
 
             {/* Motives */}
@@ -212,29 +196,7 @@ const ProposeBill = () => {
                 rows={8}
                 className={errors.motives ? "border-red-500" : ""}
               />
-              {errors.motives && (
-                <p className="text-sm text-red-600">{errors.motives}</p>
-              )}
-              <p className="text-xs text-gray-600">
-                {formData.motives.length} caractères (minimum 50)
-              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Attachments */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Upload className="mr-2 h-5 w-5" />
-              Pièces jointes (optionnel)
-            </CardTitle>
-            <CardDescription>
-              Ajoutez des documents supports: études, rapports, textes de
-              référence...
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
             <div>
               <Input
                 type="file"

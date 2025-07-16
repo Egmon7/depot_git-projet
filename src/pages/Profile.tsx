@@ -4,39 +4,17 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import {
-  User,
-  Mail,
-  MapPin,
-  Users,
-  ArrowLeft,
-  Settings,
-  Moon,
-  Sun,
-  Shield,
-  Calendar,
-} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getRoleDisplayName } from "@/utils/permissions";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
-
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
@@ -70,10 +48,6 @@ const Profile = () => {
     });
     setIsEditing(false);
   };
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="space-y-6">

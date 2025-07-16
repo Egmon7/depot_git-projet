@@ -40,7 +40,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getStatusDisplayName, getStatusColor } from "@/utils/permissions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "@/hooks/use-toast";
@@ -104,7 +103,6 @@ const BillsManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center space-x-4">
         <Button
           variant="outline"
@@ -123,7 +121,6 @@ const BillsManagement = () => {
         </div>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -138,7 +135,6 @@ const BillsManagement = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => setStatusFilter("en_attente")}
@@ -152,7 +148,6 @@ const BillsManagement = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => setStatusFilter("en_conference")}
@@ -166,7 +161,6 @@ const BillsManagement = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => setStatusFilter("validee")}
@@ -180,7 +174,6 @@ const BillsManagement = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => setStatusFilter("declassee")}
@@ -194,7 +187,6 @@ const BillsManagement = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => setStatusFilter("en_pleniere")}
@@ -208,7 +200,6 @@ const BillsManagement = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
           onClick={() => setStatusFilter("adoptee")}
@@ -238,7 +229,6 @@ const BillsManagement = () => {
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
@@ -253,7 +243,6 @@ const BillsManagement = () => {
                 />
               </div>
             </div>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-64">
                 <SelectValue placeholder="Filtrer par statut" />
@@ -273,14 +262,12 @@ const BillsManagement = () => {
               </SelectContent>
             </Select>
           </div>
-
           <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             {filteredBills.length} loi(s) trouvée(s)
           </div>
         </CardContent>
       </Card>
 
-      {/* Bills Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -329,7 +316,6 @@ const BillsManagement = () => {
                           </p>
                         </div>
                       </div>
-
                       <div className="mb-3">
                         <Badge className={getStatusColor(bill.status)}>
                           {getStatusDisplayName(bill.status)}
@@ -360,12 +346,10 @@ const BillsManagement = () => {
                           </Badge>
                         )}
                       </div>
-
                       <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-3">
                         {bill.motives}
                       </p>
                     </div>
-
                     <div className="flex flex-col space-y-2 ml-4">
                       <Button
                         variant="outline"
@@ -434,7 +418,6 @@ const BillsManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Decision Dialog */}
       <Dialog open={decisionDialog} onOpenChange={setDecisionDialog}>
         <DialogContent>
           <DialogHeader>
@@ -477,7 +460,6 @@ const BillsManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bill Detail Modal */}
       {selectedBill && !decisionDialog && (
         <Dialog
           open={!!selectedBill}

@@ -15,8 +15,6 @@ interface LegislativeContextType {
   notifications: Notification[];
   stats: LegislativeStats | null;
   activePlenary: { billId: string; isActive: boolean } | null;
-
-  // Bill actions
   proposeBill: (
     bill: Omit<
       Bill,

@@ -24,7 +24,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   FileText,
@@ -40,7 +39,6 @@ import {
   Vote,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getStatusDisplayName, getStatusColor } from "@/utils/permissions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -104,7 +102,6 @@ const MyBills = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
@@ -123,14 +120,12 @@ const MyBills = () => {
             </p>
           </div>
         </div>
-
         <Button onClick={() => navigate("/dashboard/propose-bill")}>
           <Plus className="mr-2 h-4 w-4" />
           Nouvelle proposition
         </Button>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         <Card
           className="cursor-pointer hover:bg-gray-50"
@@ -215,7 +210,6 @@ const MyBills = () => {
             <div className="text-xs text-gray-600">En plénière</div>
           </CardContent>
         </Card>
-
         <Card
           className="cursor-pointer hover:bg-gray-50"
           onClick={() => setStatusFilter("au_bureau_etudes")}
@@ -229,7 +223,6 @@ const MyBills = () => {
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
@@ -244,7 +237,6 @@ const MyBills = () => {
                 />
               </div>
             </div>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-64">
                 <SelectValue placeholder="Filtrer par statut" />
@@ -271,7 +263,6 @@ const MyBills = () => {
         </CardContent>
       </Card>
 
-      {/* Bills List */}
       <div className="space-y-4">
         {filteredBills.length > 0 ? (
           filteredBills.map((bill) => (

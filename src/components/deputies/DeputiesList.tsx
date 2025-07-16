@@ -247,14 +247,6 @@ const DeputiesList = () => {
           <Card key={deputy.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={deputy.avatarUrl} />
-                  <AvatarFallback>
-                    {deputy.firstName[0]}
-                    {deputy.lastName[0]}
-                  </AvatarFallback>
-                </Avatar>
-
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-lg truncate">
                     {deputy.firstName} {deputy.lastName}

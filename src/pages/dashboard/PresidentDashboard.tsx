@@ -34,12 +34,10 @@ import {
   Calendar,
   FileText,
   MessageSquare,
-  UserPlus,
   Vote,
   TrendingUp,
   Clock,
   CheckCircle,
-  XCircle,
   Play,
   Square,
 } from "lucide-react";
@@ -60,7 +58,6 @@ const PresidentDashboard = () => {
     addNotification,
   } = useLegislative();
   const navigate = useNavigate();
-
   const [convocationDialog, setConvocationDialog] = useState(false);
   const [convocationData, setConvocationData] = useState({
     title: "",
@@ -77,12 +74,7 @@ const PresidentDashboard = () => {
       title: convocationData.title,
       message: convocationData.message,
       isRead: false,
-      metadata: {
-        meetingDate: new Date(convocationData.meetingDate),
-        sender: `${user?.firstName} ${user?.lastName}`,
-      },
     });
-
     setConvocationDialog(false);
     setConvocationData({
       title: "",

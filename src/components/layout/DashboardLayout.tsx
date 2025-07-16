@@ -25,8 +25,6 @@ import {
   Vote,
   Calendar,
   BarChart3,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getRoleDisplayName } from "@/utils/permissions";
@@ -191,18 +189,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   >
                     <User className="mr-2 h-4 w-4" />
                     Profil
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={toggleTheme}>
-                    {theme === "dark" ? (
-                      <Sun className="mr-2 h-4 w-4" />
-                    ) : (
-                      <Moon className="mr-2 h-4 w-4" />
-                    )}
-                    {theme === "dark" ? "Mode clair" : "Mode sombre"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Paramètres
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>

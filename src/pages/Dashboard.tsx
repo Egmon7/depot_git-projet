@@ -17,8 +17,6 @@ const Dashboard = () => {
     case "rapporteur":
       return <RapporteurDashboard />;
 
-    case "bureau_etudes":
-      return <StudyBureauDashboard />;
     default:
       return (
         <div className="text-center py-12">

@@ -62,7 +62,6 @@ const StudyBureauDashboard = () => {
       date: new Date(),
     };
 
-    addStudyBureauAnalysis(billId, analysis);
 
     // Notify rapporteur about completed analysis
     addNotification({

@@ -78,7 +78,6 @@ export const getRoleDisplayName = (role: UserRole): string => {
     depute: "Député",
     president: "Président",
     rapporteur: "Rapporteur",
-    bureau_etudes: "Bureau d'Études",
   };
 
   return roleNames[role];
