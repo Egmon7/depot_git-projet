@@ -8,7 +8,7 @@ import { LegislativeProvider } from "@/contexts/LegislativeContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-
+import PresidentDashboard from './pages/dashboard/PresidentDashboard';
 // Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -25,6 +25,7 @@ import Statistics from "./pages/Statistics";
 import BillsManagement from "./pages/bills/BillsManagement";
 import SessionManagement from "./pages/plenary/SessionManagement";
 import NotFound from "./pages/NotFound";
+import StudyBureauDashboard from "./pages/dashboard/StudyBureauDashboard";
 
 const queryClient = new QueryClient();
 
@@ -53,10 +54,21 @@ const App = () => (
                   }
                 />
 
+<Route
+  path="/dashboard/bureau-etudes"
+  element={
+    <ProtectedRoute requiredRole={["Conseiller principal"]}>
+      <DashboardLayout>
+        <StudyBureauDashboard />
+      </DashboardLayout>
+    </ProtectedRoute>
+  }
+/>
+
                 <Route
                   path="/dashboard/propose-bill"
                   element={
-                    <ProtectedRoute requiredRole={["depute"]}>
+                    <ProtectedRoute requiredRole={["député", "président"]}>
                       <DashboardLayout>
                         <ProposeBill />
                       </DashboardLayout>
@@ -67,7 +79,7 @@ const App = () => (
                 <Route
                   path="/dashboard/my-bills"
                   element={
-                    <ProtectedRoute requiredRole={["depute"]}>
+                    <ProtectedRoute requiredRole={["député", "président"]}>
                       <DashboardLayout>
                         <MyBills />
                       </DashboardLayout>
@@ -78,7 +90,7 @@ const App = () => (
                 <Route
                   path="/dashboard/voting"
                   element={
-                    <ProtectedRoute requiredRole={["depute"]}>
+                    <ProtectedRoute requiredRole={["député", "président"]}>
                       <DashboardLayout>
                         <PlenaryVoting />
                       </DashboardLayout>
@@ -89,7 +101,7 @@ const App = () => (
                 <Route
                   path="/dashboard/deputies"
                   element={
-                    <ProtectedRoute requiredRole={["president", "rapporteur"]}>
+                    <ProtectedRoute requiredRole={["président", "rapporteur"]}>
                       <DashboardLayout>
                         <DeputiesList />
                       </DashboardLayout>
@@ -133,7 +145,7 @@ const App = () => (
                 <Route
                   path="/dashboard/conference"
                   element={
-                    <ProtectedRoute requiredRole={["president"]}>
+                    <ProtectedRoute requiredRole={["président"]}>
                       <DashboardLayout>
                         <ConferenceDashboard />
                       </DashboardLayout>
@@ -144,7 +156,7 @@ const App = () => (
                 <Route
                   path="/dashboard/stats"
                   element={
-                    <ProtectedRoute requiredRole={["president"]}>
+                    <ProtectedRoute requiredRole={["président"]}>
                       <DashboardLayout>
                         <Statistics />
                       </DashboardLayout>
@@ -155,18 +167,29 @@ const App = () => (
                 <Route
                   path="/dashboard/bills-management"
                   element={
-                    <ProtectedRoute requiredRole={["president"]}>
+                    <ProtectedRoute requiredRole={["président"]}>
                       <DashboardLayout>
                         <BillsManagement />
                       </DashboardLayout>
                     </ProtectedRoute>
                   }
                 />
+                              <Route
+              path="/dashboard/president"
+              element={
+                <ProtectedRoute requiredRole={["président"]}>
+                  <DashboardLayout>
+                    <PresidentDashboard />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            
 
                 <Route
                   path="/dashboard/sessions"
                   element={
-                    <ProtectedRoute requiredRole={["president"]}>
+                    <ProtectedRoute requiredRole={["président"]}>
                       <DashboardLayout>
                         <SessionManagement />
                       </DashboardLayout>

@@ -10,12 +10,14 @@ const Dashboard = () => {
   const { user } = useAuth();
 
   switch (user?.role) {
-    case "depute":
+    case "député":
       return <DeputyDashboard />;
-    case "president":
+    case "président":
       return <PresidentDashboard />;
     case "rapporteur":
       return <RapporteurDashboard />;
+      case "Conseiller principal":
+      return <StudyBureauDashboard />;
 
     default:
       return (

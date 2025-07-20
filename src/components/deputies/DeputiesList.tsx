@@ -38,36 +38,36 @@ const DeputiesList = () => {
 
   const filteredDeputies = deputies.filter((deputy) => {
     const matchesSearch =
-      deputy.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deputy.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deputy.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deputy.postnom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deputy.email.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesGroup =
-      filterGroup === "all" || deputy.parlementaryGroup === filterGroup;
+      filterGroup === "all" || deputy.groupe_parlementaire === filterGroup;
     const matchesConstituency =
       filterConstituency === "all" ||
-      deputy.constituency === filterConstituency;
+      deputy.circonscription === filterConstituency;
     const matchesGender =
-      filterGender === "all" || deputy.gender === filterGender;
+      filterGender === "all" || deputy.sexe === filterGender;
 
     return (
       matchesSearch && matchesGroup && matchesConstituency && matchesGender
     );
   });
 
-  const uniqueGroups = [...new Set(deputies.map((d) => d.parlementaryGroup))];
+  const uniqueGroups = [...new Set(deputies.map((d) => d.groupe_parlementaire))];
   const constituencies = ["Funa", "Mont Amba", "Lukunga", "Tshangu"];
 
   const stats = {
     total: deputies.length,
-    active: deputies.filter((d) => d.isActive).length,
+    active: deputies.filter((d) => d.statut ).length,
     byGender: {
-      homme: deputies.filter((d) => d.gender === "homme").length,
-      femme: deputies.filter((d) => d.gender === "femme").length,
+      homme: deputies.filter((d) => d.sexe === "homme").length,
+      femme: deputies.filter((d) => d.sexe === "femme").length,
     },
     byConstituency: constituencies.reduce(
       (acc, c) => {
-        acc[c] = deputies.filter((d) => d.constituency === c).length;
+        acc[c] = deputies.filter((d) => d.circonscription === c).length;
         return acc;
       },
       {} as Record<string, number>,
@@ -249,7 +249,7 @@ const DeputiesList = () => {
               <div className="flex items-start space-x-4">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-lg truncate">
-                    {deputy.firstName} {deputy.lastName}
+                    {deputy.nom} {deputy.postnom}
                   </h3>
 
                   <div className="space-y-2 mt-2">
@@ -260,28 +260,28 @@ const DeputiesList = () => {
 
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <span>{deputy.constituency}</span>
+                      <span>{deputy.circonscription}</span>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mt-3">
                       <Badge variant="outline" className="text-xs">
-                        {deputy.parlementaryGroup}
+                        {deputy.groupe_parlementaire}
                       </Badge>
                       <Badge
-                        variant={deputy.isActive ? "default" : "secondary"}
+                        variant={deputy.statut  ? "default" : "secondary"}
                         className="text-xs"
                       >
-                        {deputy.isActive ? "Actif" : "Inactif"}
+                        {deputy.statut  ? "Actif" : "Inactif"}
                       </Badge>
                       <Badge
                         variant="outline"
                         className={`text-xs ${
-                          deputy.gender === "homme"
+                          deputy.sexe === "homme"
                             ? "bg-blue-50 text-blue-700"
                             : "bg-pink-50 text-pink-700"
                         }`}
                       >
-                        {deputy.gender === "homme" ? "H" : "F"}
+                        {deputy.sexe === "homme" ? "H" : "F"}
                       </Badge>
                     </div>
                   </div>

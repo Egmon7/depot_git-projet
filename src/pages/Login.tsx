@@ -1,45 +1,59 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+// frontend/src/components/Login.tsx
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Scale } from "lucide-react";
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Scale } from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || "/dashboard";
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  const validateEmail = (email: string) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setIsLoading(true);
+
+    if (!validateEmail(email)) {
+      setError('Veuillez entrer un email valide');
+      setIsLoading(false);
+      return;
+    }
 
     try {
       await login({ email, password });
       navigate(from, { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur de connexion");
-    } finally {
+    } catch (err: any) {
+      setError(err.message || 'Email ou mot de passe incorrect');
       setIsLoading(false);
     }
   };
+
+  //fun: check rle et token 
+  // switch verifie le role etpuis ca redirige
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -48,20 +62,14 @@ const Login = () => {
           <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
             <Scale className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Assemblée Législative
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Système de gestion du processus législatif
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">Assemblée Législative</h1>
+          <p className="text-gray-600 mt-2">Système de gestion du processus législatif</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle>Connexion</CardTitle>
-            <CardDescription>
-              Accédez à votre espace de travail législatif
-            </CardDescription>
+            <CardDescription>Accédez à votre espace de travail législatif</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,7 +79,7 @@ const Login = () => {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.trim())}
                   placeholder="votre.email@assemblee.cd"
                   required
                 />
@@ -97,7 +105,7 @@ const Login = () => {
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Se connecter
+                Connexion
               </Button>
             </form>
           </CardContent>

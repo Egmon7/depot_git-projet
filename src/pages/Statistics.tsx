@@ -1,5 +1,6 @@
 import React from "react";
 import { useLegislative } from "@/contexts/LegislativeContext";
+import { LegislativeStats } from "@/types/legislative"; 
 import {
   Card,
   CardContent,
@@ -32,27 +33,35 @@ const Statistics = () => {
     return <div>Chargement des statistiques...</div>;
   }
 
-  const billsByGroup = deputies.reduce(
-    (acc, deputy) => {
-      const group = deputy.parlementaryGroup;
-      acc[group] = (acc[group] || 0) + deputy.billsProposed;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  // --- Correction: remplacement de isActive par statut
+  const activeDeputiesCount = deputies.filter((d) => d.statut).length;
 
+  // --- Regroupement des propositions par groupe parlementaire
+  const billsByGroup = deputies.reduce<Record<string, number>>((acc, deputy) => {
+    const group = deputy.groupe_parlementaire || "Non renseigné";
+    acc[group] = (acc[group] || 0) + (deputy.billsProposed || 0);
+    return acc;
+  }, {});
+
+  // --- Statistiques genre
   const genderStats = {
-    homme: deputies.filter((d) => d.gender === "homme").length,
-    femme: deputies.filter((d) => d.gender === "femme").length,
+    homme: deputies.filter((d) => d.sexe === "homme").length,
+    femme: deputies.filter((d) => d.sexe === "femme").length,
   };
 
-  const topDeputies = deputies
-    .sort((a, b) => b.billsProposed - a.billsProposed)
+  // --- Top 5 députés par propositions
+  const topDeputies = [...deputies]
+    .sort((a, b) => (b.billsProposed || 0) - (a.billsProposed || 0))
     .slice(0, 5);
 
-  const avgParticipation = Math.round(
-    deputies.reduce((acc, d) => acc + d.participationRate, 0) / deputies.length,
-  );
+  // --- Moyenne participation
+  const avgParticipation =
+    deputies.length > 0
+      ? Math.round(
+          deputies.reduce((acc, d) => acc + (d.participationRate || 0), 0) /
+            deputies.length,
+        )
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -66,10 +75,10 @@ const Statistics = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-3xl font-bold text-gray-900">
             Statistiques législatives
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 mt-1">
             Analyses détaillées de l'activité parlementaire
           </p>
         </div>
@@ -77,6 +86,7 @@ const Statistics = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Total lois */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -96,6 +106,7 @@ const Statistics = () => {
           </CardContent>
         </Card>
 
+        {/* Députés actifs */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -106,9 +117,7 @@ const Statistics = () => {
             <div className="flex items-center">
               <Users className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <div className="text-2xl font-bold">
-                  {deputies.filter((d) => d.isActive).length}
-                </div>
+                <div className="text-2xl font-bold">{activeDeputiesCount}</div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
                   sur {deputies.length} total
                 </p>
@@ -117,6 +126,7 @@ const Statistics = () => {
           </CardContent>
         </Card>
 
+        {/* Participation moyenne */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -136,6 +146,7 @@ const Statistics = () => {
           </CardContent>
         </Card>
 
+        {/* Lois adoptées */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -158,166 +169,158 @@ const Statistics = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Bills by Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <PieChart className="mr-2 h-5 w-5" />
-              Répartition par statut
-            </CardTitle>
-            <CardDescription>
-              État d'avancement des propositions de loi
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(stats.billsByStatus).map(([status, count]) => {
-                const percentage =
-                  stats.totalBills > 0 ? (count / stats.totalBills) * 100 : 0;
+      {/* Bills by Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <PieChart className="mr-2 h-5 w-5" />
+            Répartition par statut
+          </CardTitle>
+          <CardDescription>
+            État d'avancement des propositions de loi
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(stats.billsByStatus).map(([status, count]) => {
+              const percentage =
+                stats.totalBills > 0 ? (count / stats.totalBills) * 100 : 0;
+              return (
+                <div key={status} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                  <span>{status}</span>
+
+                    <span className="text-sm font-medium">
+                      {count} ({percentage.toFixed(1)}%)
+                    </span>
+                  </div>
+                  <Progress value={percentage} className="h-2" />
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bills by Parliamentary Group */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BarChart3 className="mr-2 h-5 w-5" />
+            Propositions par groupe parlementaire
+          </CardTitle>
+          <CardDescription>
+            Activité législative par formation politique
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(billsByGroup)
+              .sort(([, a], [, b]) => b - a)
+              .map(([group, count]) => {
+                const maxCount = Math.max(...Object.values(billsByGroup));
+                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
                 return (
-                  <div key={status} className="space-y-2">
+                  <div key={group} className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <Badge className={getStatusColor(status)}>
-                        {getStatusDisplayName(status)}
-                      </Badge>
-                      <span className="text-sm font-medium">
-                        {count} ({percentage.toFixed(1)}%)
+                      <span className="text-sm font-medium">{group}</span>
+                      <span className="text-sm">{count} proposition(s)</span>
+                    </div>
+                    <Progress value={percentage} className="h-2" />
+                  </div>
+                );
+              })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Top Deputies */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Users className="mr-2 h-5 w-5" />
+            Députés les plus actifs
+          </CardTitle>
+          <CardDescription>Classement par nombre de propositions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {topDeputies.map((deputy, index) => (
+              <div
+                key={deputy.id}
+                className="flex items-center justify-between p-3 border rounded-lg dark:border-gray-700"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-300">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm">
+                      {deputy.nom} {deputy.postnom}
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {deputy.groupe_parlementaire}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold">
+                    {deputy.billsProposed} lois
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    {deputy.participationRate}% participation
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Geographic Distribution */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <MapPin className="mr-2 h-5 w-5" />
+            Répartition géographique
+          </CardTitle>
+          <CardDescription>Activité par circonscription</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Object.entries(stats.billsByConstituency)
+              .sort(([, a], [, b]) =>  Number(b) - Number(a))
+              .map(([constituency, count]) => {
+                const deputiesInConstituency = deputies.filter(
+                  (d) => d.circonscription === constituency,
+                ).length;
+                // Pour le calcul, on garde le nombre (parseFloat)
+                const avgPerDeputy =
+                  deputiesInConstituency > 0
+                    ? parseFloat((count / deputiesInConstituency).toFixed(1))
+                    : 0;
+                const maxCount = Math.max(
+                  ...Object.values(stats.billsByConstituency),
+                );
+                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+                return (
+                  <div key={constituency} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{constituency}</span>
+                      <span className="text-sm">
+                        {count} lois ({avgPerDeputy}/député)
                       </span>
                     </div>
                     <Progress value={percentage} className="h-2" />
                   </div>
                 );
               })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bills by Parliamentary Group */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart3 className="mr-2 h-5 w-5" />
-              Propositions par groupe parlementaire
-            </CardTitle>
-            <CardDescription>
-              Activité législative par formation politique
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(billsByGroup)
-                .sort(([, a], [, b]) => b - a)
-                .map(([group, count]) => {
-                  const maxCount = Math.max(...Object.values(billsByGroup));
-                  const percentage =
-                    maxCount > 0 ? (count / maxCount) * 100 : 0;
-                  return (
-                    <div key={group} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">{group}</span>
-                        <span className="text-sm">{count} proposition(s)</span>
-                      </div>
-                      <Progress value={percentage} className="h-2" />
-                    </div>
-                  );
-                })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Deputies */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5" />
-              Députés les plus actifs
-            </CardTitle>
-            <CardDescription>
-              Classement par nombre de propositions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topDeputies.map((deputy, index) => (
-                <div
-                  key={deputy.id}
-                  className="flex items-center justify-between p-3 border rounded-lg dark:border-gray-700"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-300">
-                        {index + 1}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium text-sm">
-                        {deputy.firstName} {deputy.lastName}
-                      </div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400">
-                        {deputy.parlementaryGroup}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-semibold">
-                      {deputy.billsProposed} lois
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {deputy.participationRate}% participation
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Geographic Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <MapPin className="mr-2 h-5 w-5" />
-              Répartition géographique
-            </CardTitle>
-            <CardDescription>Activité par circonscription</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(stats.billsByConstituency)
-                .sort(([, a], [, b]) => b - a)
-                .map(([constituency, count]) => {
-                  const deputiesInConstituency = deputies.filter(
-                    (d) => d.constituency === constituency,
-                  ).length;
-                  const avgPerDeputy =
-                    deputiesInConstituency > 0
-                      ? (count / deputiesInConstituency).toFixed(1)
-                      : "0";
-                  const maxCount = Math.max(
-                    ...Object.values(stats.billsByConstituency),
-                  );
-                  const percentage =
-                    maxCount > 0 ? (count / maxCount) * 100 : 0;
-
-                  return (
-                    <div key={constituency} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">
-                          {constituency}
-                        </span>
-                        <span className="text-sm">
-                          {count} lois ({avgPerDeputy}/député)
-                        </span>
-                      </div>
-                      <Progress value={percentage} className="h-2" />
-                    </div>
-                  );
-                })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Gender Statistics */}
       <Card>
@@ -393,7 +396,8 @@ const Statistics = () => {
                 <div className="flex-1">
                   <p className="text-sm">{activity.description}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {activity.date.toLocaleDateString("fr-FR")}
+                    {/* Conversion string -> Date */}
+                    {new Date(activity.date).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
               </div>

@@ -65,8 +65,9 @@ const SessionManagement = () => {
 
   // Bills ready for plenary (validated and analyzed)
   const billsReadyForPlenary = bills.filter(
-    (b) => b.status === "validee" && b.studyBureauAnalysis,
+    (b) => b.etat === 3 && b.study_bureau_analysis, // 3 = validée
   );
+  
 
   // Current voting bill
   const currentVotingBill = activePlenary
@@ -79,15 +80,15 @@ const SessionManagement = () => {
     non: votes.filter((v) => v.vote === "non").length,
     abstention: votes.filter((v) => v.vote === "abstention").length,
     total: votes.length,
-    remaining: deputies.filter((d) => d.isActive).length - votes.length,
+    remaining: deputies.filter((d) => d.statut).length - votes.length,
   };
 
-  const totalDeputies = deputies.filter((d) => d.isActive).length;
+  const totalDeputies = deputies.filter((d) => d.statut).length;
   const participationRate =
     totalDeputies > 0 ? (voteStats.total / totalDeputies) * 100 : 0;
 
   // Completed votes (bills with final results)
-  const completedVotes = bills.filter((b) => b.finalResult);
+  const completedVotes = bills.filter((b) => b.final_result);
 
   const handleSchedulePlenary = () => {
     if (!selectedBill || !plenaryDate) {
@@ -109,7 +110,7 @@ const SessionManagement = () => {
       isRead: false,
       metadata: {
         billId: selectedBill,
-        meetingDate: new Date(plenaryDate),
+        meetingDate: new Date(plenaryDate).toISOString(),  // <-- converti en string
         sender: "Président",
       },
     });
@@ -156,10 +157,10 @@ const SessionManagement = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h1 className="text-3xl font-bold text-gray-900">
             Gestion des sessions
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 mt-1">
             Programmation et conduite des sessions plénières
           </p>
         </div>
@@ -208,7 +209,7 @@ const SessionManagement = () => {
                       <SelectContent>
                         {billsReadyForPlenary.map((bill) => (
                           <SelectItem key={bill.id} value={bill.id}>
-                            {bill.title}
+                            {bill.sujet}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -248,7 +249,7 @@ const SessionManagement = () => {
               <div className="space-y-3">
                 <p className="text-sm font-medium">Vote en cours:</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {currentVotingBill?.title}
+                  {currentVotingBill?.sujet}
                 </p>
                 <Button
                   onClick={handleEndVoting}
@@ -276,7 +277,7 @@ const SessionManagement = () => {
                       <SelectContent>
                         {billsReadyForPlenary.map((bill) => (
                           <SelectItem key={bill.id} value={bill.id}>
-                            {bill.title}
+                            {bill.sujet}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -327,23 +328,23 @@ const SessionManagement = () => {
                   {completedVotes.map((bill) => (
                     <Card key={bill.id}>
                       <CardContent className="p-4">
-                        <h3 className="font-semibold mb-2">{bill.title}</h3>
+                        <h3 className="font-semibold mb-2">{bill.sujet}</h3>
                         <div className="grid grid-cols-3 gap-4 mb-3">
                           <div className="text-center">
                             <div className="text-2xl font-bold text-green-600">
-                              {bill.finalResult?.oui || 0}
+                              {bill.final_result?.nombre_oui || 0}
                             </div>
                             <div className="text-sm">OUI</div>
                           </div>
                           <div className="text-center">
                             <div className="text-2xl font-bold text-red-600">
-                              {bill.finalResult?.non || 0}
+                              {bill.final_result?.nombre_non || 0}
                             </div>
                             <div className="text-sm">NON</div>
                           </div>
                           <div className="text-center">
                             <div className="text-2xl font-bold text-gray-600">
-                              {bill.finalResult?.abstention || 0}
+                              {bill.final_result?.nombre_abstention || 0}
                             </div>
                             <div className="text-sm">ABSTENTION</div>
                           </div>
@@ -351,19 +352,19 @@ const SessionManagement = () => {
                         <div className="text-center">
                           <Badge
                             className={
-                              bill.finalResult?.result === "adoptee"
+                              bill.final_result?.result === "adoptee"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-red-100 text-red-800"
                             }
                           >
-                            {bill.finalResult?.result === "adoptee"
+                            {bill.final_result?.result === "adoptee"
                               ? "ADOPTÉE"
                               : "REJETÉE"}
                           </Badge>
-                          {bill.finalResult?.date && (
+                          {bill.final_result?.date && (
                             <p className="text-xs text-gray-500 mt-1">
                               {format(
-                                new Date(bill.finalResult.date),
+                                new Date(bill.final_result.date),
                                 "dd MMM yyyy",
                                 { locale: fr },
                               )}
@@ -402,16 +403,16 @@ const SessionManagement = () => {
               {/* Bill Info */}
               <div>
                 <h3 className="font-semibold text-lg mb-2">
-                  {currentVotingBill.title}
+                  {currentVotingBill.sujet}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  <strong>Sujet:</strong> {currentVotingBill.subject}
+                  <strong>Sujet:</strong> {currentVotingBill.sujet}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  <strong>Auteur:</strong> {currentVotingBill.authorName}
+                  <strong>Auteur:</strong> {currentVotingBill.author_name}
                 </p>
                 <div className="bg-white dark:bg-gray-800 p-3 rounded">
-                  <p className="text-sm">{currentVotingBill.motives}</p>
+                  <p className="text-sm">{currentVotingBill.exposer}</p>
                 </div>
               </div>
 
@@ -527,9 +528,9 @@ const SessionManagement = () => {
                   className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700"
                 >
                   <div className="flex-1">
-                    <h4 className="font-medium">{bill.title}</h4>
+                    <h4 className="font-medium">{bill.sujet}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Par {bill.authorName}
+                      Par {bill.author_name}
                     </p>
                     <div className="flex space-x-2 mt-2">
                       <Badge
@@ -538,7 +539,7 @@ const SessionManagement = () => {
                       >
                         ✓ Validée en conférence
                       </Badge>
-                      {bill.studyBureauAnalysis && (
+                      {bill.study_bureau_analysis && (
                         <Badge
                           variant="outline"
                           className="border-blue-200 text-blue-700"

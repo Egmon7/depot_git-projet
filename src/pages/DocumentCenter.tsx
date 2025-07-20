@@ -47,29 +47,42 @@ const DocumentCenter = () => {
   // Transform bills into documents
   const documents = bills.map((bill) => ({
     id: bill.id,
-    title: bill.title,
+    title: bill.sujet,
     type: "proposition_loi",
-    status: bill.status,
-    author: bill.authorName,
-    createdAt: bill.createdAt,
-    updatedAt: bill.updatedAt,
-    description: bill.motives.substring(0, 150) + "...",
-    category: bill.subject,
-    attachments: bill.attachments || [],
-    hasAnalysis: !!bill.studyBureauAnalysis,
-    hasConferenceDecision: !!bill.conferenceDecision,
-    hasVoteResults: !!bill.finalResult,
+    status: bill.etat,
+    author: bill.author_name,
+    createdAt: bill.date_depot,
+    updatedAt: bill.date_depot, // ou null si non disponible
+    description: bill.exposer.substring(0, 150) + "...",
+    category: bill.code,
+    attachments: bill.piece ? [bill.piece] : [],
+    hasAnalysis: !!bill.study_bureau_analysis,
+    hasConferenceDecision: !!bill.conference_decision,
+    hasVoteResults: !!bill.final_result,
   }));
-
+  
+  const statusMap: Record<string, number> = {
+    en_attente: 0,
+    en_conference: 1,
+    au_bureau_etudes: 2,
+    validee: 3,
+    en_pleniere: 4,
+    adoptee: 5,
+    rejetee: 6,
+    declassee: 7,
+  };
+  
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch =
       doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.category.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus = statusFilter === "all" || doc.status === statusFilter;
+  
+    const matchesStatus =
+      statusFilter === "all" || doc.status === statusMap[statusFilter];
+  
     const matchesType = typeFilter === "all" || doc.type === typeFilter;
-
+  
     return matchesSearch && matchesStatus && matchesType;
   });
 

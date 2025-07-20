@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLegislative } from "@/contexts/LegislativeContext";
-import { useTheme } from "@/contexts/ThemeContext";
+import { Direction } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const { getUnreadNotifications } = useLegislative();
-  const { theme, toggleTheme } = useTheme();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,90 +52,62 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       { icon: Home, label: "Tableau de bord", path: "/dashboard" },
     ];
 
-    switch (user?.role) {
-      case "depute":
-        return [
-          ...baseItems,
-          {
-            icon: FileText,
-            label: "Mes propositions",
-            path: "/dashboard/my-bills",
-          },
-          {
-            icon: FileText,
-            label: "Proposer une loi",
-            path: "/dashboard/propose-bill",
-          },
-          { icon: Vote, label: "Votes", path: "/dashboard/voting" },
-          { icon: FileText, label: "Documents", path: "/dashboard/documents" },
-        ];
-
-      case "president":
-        return [
-          ...baseItems,
-          {
-            icon: FileText,
-            label: "Lois",
-            path: "/dashboard/bills-management",
-          },
-          {
-            icon: Vote,
-            label: "Conférence des Présidents",
-            path: "/dashboard/conference",
-          },
-          { icon: Calendar, label: "Sessions", path: "/dashboard/sessions" },
-          { icon: Users, label: "Députés", path: "/dashboard/deputies" },
-          { icon: BarChart3, label: "Statistiques", path: "/dashboard/stats" },
-          { icon: FileText, label: "Documents", path: "/dashboard/documents" },
-        ];
-
-      case "rapporteur":
-        return [
-          ...baseItems,
-          {
-            icon: Bell,
-            label: "Convocations",
-            path: "/dashboard/convocations",
-          },
-          { icon: Users, label: "Députés", path: "/dashboard/deputies" },
-          { icon: FileText, label: "Documents", path: "/dashboard/documents" },
-        ];
-
-      case "bureau_etudes":
-        return [
-          ...baseItems,
-          {
-            icon: FileText,
-            label: "Lois à analyser",
-            path: "/dashboard/bills-analysis",
-          },
-          {
-            icon: FileText,
-            label: "Mes analyses",
-            path: "/dashboard/my-analyses",
-          },
-        ];
-
-      default:
-        return baseItems;
+    if (user?.role === "député") {
+      return [
+        ...baseItems,
+        { icon: FileText, label: "Mes propositions", path: "/dashboard/my-bills" },
+        { icon: FileText, label: "Proposer une loi", path: "/dashboard/propose-bill" },
+        { icon: Vote, label: "Votes", path: "/dashboard/voting" },
+        { icon: FileText, label: "Documents", path: "/dashboard/documents" },
+      ];
     }
+
+    if (user?.role === "président") {
+      return [
+        ...baseItems,
+        { icon: FileText, label: "Lois", path: "/dashboard/bills-management" },
+        { icon: Vote, label: "Conférence des Présidents", path: "/dashboard/conference" },
+        { icon: Calendar, label: "Sessions", path: "/dashboard/sessions" },
+        { icon: Users, label: "Députés", path: "/dashboard/deputies" },
+        { icon: BarChart3, label: "Statistiques", path: "/dashboard/stats" },
+        { icon: FileText, label: "Documents", path: "/dashboard/documents" },
+      ];
+    }
+
+    if (user?.role === "rapporteur") {
+      return [
+        ...baseItems,
+        { icon: Bell, label: "Convocations", path: "/dashboard/convocations" },
+        { icon: Users, label: "Députés", path: "/dashboard/deputies" },
+        { icon: FileText, label: "Documents", path: "/dashboard/documents" },
+      ];
+    }
+
+    // 🔧 Test de la direction pour bureau d'études
+    if (user?.direction === "bureau_etudes") {
+      return [
+        ...baseItems,
+        { icon: FileText, label: "Lois à analyser", path: "/dashboard/bills-analysis" },
+        { icon: FileText, label: "Mes analyses", path: "/dashboard/my-analyses" },
+      ];
+    }
+
+    return baseItems;
   };
 
   const navigationItems = getNavigationItems();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
+      <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="flex items-center">
-                <Scale className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                <span className="ml-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Assemblée Législative
-                </span>
-              </div>
+              <Scale className="h-8 w-8 text-blue-600" />
+              <span className="ml-3 text-xl font-semibold text-gray-900">
+                Assemblée Législative
+              </span>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -160,22 +132,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-2"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.avatarUrl} />
-                      <AvatarFallback>
-                        {user?.firstName[0]}
-                        {user?.lastName[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                  <Button variant="ghost" className="flex items-center space-x-2">
                     <div className="hidden md:block text-left">
-                      <div className="text-sm font-medium dark:text-gray-100">
-                        {user?.firstName} {user?.lastName}
+                      <div className="text-sm font-medium">
+                        {user?.nom} {user?.postnom}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500">
                         {getRoleDisplayName(user?.role!)}
                       </div>
                     </div>
@@ -184,9 +146,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => navigate("/dashboard/profile")}
-                  >
+                  <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
                     <User className="mr-2 h-4 w-4" />
                     Profil
                   </DropdownMenuItem>

@@ -46,17 +46,21 @@ import { getStatusDisplayName, getStatusColor } from "@/utils/permissions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
+// Enum pour les états des lois
+enum BillStatus {
+  en_cabinet = 0,
+  au_bureau_etudes = 1,
+  en_conference = 2,
+  validee = 3,
+  en_pleniere = 4,
+  adoptee = 5,
+  rejetee = 6,
+  declassee = 7,
+}
+
 const PresidentDashboard = () => {
   const { user } = useAuth();
-  const {
-    bills,
-    deputies,
-    stats,
-    activePlenary,
-    startPlenary,
-    endPlenary,
-    addNotification,
-  } = useLegislative();
+  const { bills, deputies, stats, activePlenary, startPlenary, endPlenary, addNotification } = useLegislative();
   const navigate = useNavigate();
   const [convocationDialog, setConvocationDialog] = useState(false);
   const [convocationData, setConvocationData] = useState({
@@ -66,10 +70,15 @@ const PresidentDashboard = () => {
     meetingDate: "",
   });
 
+  const rapporteur = deputies.find((d) => d.role === "rapporteur");
+
   const handleSendConvocation = () => {
-    // Send notification to rapporteur
+    if (!rapporteur) {
+      alert("Aucun rapporteur trouvé");
+      return;
+    }
     addNotification({
-      recipientId: "3", // Rapporteur ID
+      recipientId: rapporteur.id,
       type: convocationData.type,
       title: convocationData.title,
       message: convocationData.message,
@@ -84,17 +93,18 @@ const PresidentDashboard = () => {
     });
   };
 
+  // Filtrages avec enum
   const billsInProgress = bills.filter(
-    (b) => !["adoptee", "rejetee", "declassee"].includes(b.status),
+    (b) => ![BillStatus.adoptee, BillStatus.rejetee, BillStatus.declassee].includes(b.etat)
   );
-  const recentActivity = stats?.recentActivity.slice(0, 5) || [];
+  const billsReadyForPlenary = bills.filter((b) => b.etat === BillStatus.validee);
 
   const genderStats = {
-    homme: deputies.filter((d) => d.gender === "homme").length,
-    femme: deputies.filter((d) => d.gender === "femme").length,
+    homme: deputies.filter((d) => d.sexe === "homme").length,
+    femme: deputies.filter((d) => d.sexe === "femme").length,
   };
 
-  const billsReadyForPlenary = bills.filter((b) => b.status === "validee");
+  const recentActivity = stats?.recentActivity?.slice(0, 5) || [];
 
   return (
     <div className="space-y-6">
@@ -105,7 +115,7 @@ const PresidentDashboard = () => {
             Tableau de bord - Président
           </h1>
           <p className="text-gray-600 mt-1">
-            Vue d'ensemble du processus législatif
+            Bienvenue {user?.prenom} {user?.nom}
           </p>
         </div>
         <div className="flex space-x-3">
@@ -207,16 +217,14 @@ const PresidentDashboard = () => {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Total des lois
+              Total des lois...
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
               <FileText className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
-                <div className="text-2xl font-bold">
-                  {stats?.totalBills || 0}
-                </div>
+                <div className="text-2xl font-bold">{stats?.totalBills || 0}</div>
                 <p className="text-xs text-gray-600">en cours de traitement</p>
               </div>
             </div>
@@ -234,7 +242,7 @@ const PresidentDashboard = () => {
               <Users className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <div className="text-2xl font-bold">
-                  {deputies.filter((d) => d.isActive).length}
+                  {deputies.filter((d) => d.statut).length}
                 </div>
                 <p className="text-xs text-gray-600">
                   {genderStats.homme}H / {genderStats.femme}F
@@ -254,9 +262,7 @@ const PresidentDashboard = () => {
             <div className="flex items-center">
               <Vote className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <div className="text-2xl font-bold">
-                  {billsReadyForPlenary.length}
-                </div>
+                <div className="text-2xl font-bold">{billsReadyForPlenary.length}</div>
                 <p className="text-xs text-gray-600">validées et analysées</p>
               </div>
             </div>
@@ -274,10 +280,12 @@ const PresidentDashboard = () => {
               <TrendingUp className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
                 <div className="text-2xl font-bold">
-                  {Math.round(
-                    deputies.reduce((acc, d) => acc + d.participationRate, 0) /
-                      deputies.length,
-                  )}
+                  {deputies.length > 0
+                    ? Math.round(
+                        deputies.reduce((acc, d) => acc + d.participationRate, 0) /
+                          deputies.length
+                      )
+                    : 0}
                   %
                 </div>
                 <p className="text-xs text-gray-600">taux de participation</p>
@@ -301,7 +309,7 @@ const PresidentDashboard = () => {
               <div>
                 <p className="font-medium">
                   Loi en cours de vote:{" "}
-                  {bills.find((b) => b.id === activePlenary.billId)?.title}
+                  {bills.find((b) => b.id === activePlenary.billId)?.sujet}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
                   Session {activePlenary.isActive ? "ouverte" : "fermée"}
@@ -337,35 +345,35 @@ const PresidentDashboard = () => {
                     className="flex items-center space-x-4 p-3 border rounded-lg"
                   >
                     <div className="flex-shrink-0">
-                      {bill.status === "en_attente" && (
+                      {bill.etat === BillStatus.en_cabinet && (
                         <Clock className="h-5 w-5 text-yellow-600" />
                       )}
-                      {bill.status === "en_conference" && (
+                      {bill.etat === BillStatus.en_conference && (
                         <Calendar className="h-5 w-5 text-blue-600" />
                       )}
-                      {bill.status === "au_bureau_etudes" && (
+                      {bill.etat === BillStatus.au_bureau_etudes && (
                         <FileText className="h-5 w-5 text-purple-600" />
                       )}
-                      {bill.status === "validee" && (
+                      {bill.etat === BillStatus.validee && (
                         <CheckCircle className="h-5 w-5 text-green-600" />
                       )}
-                      {bill.status === "en_pleniere" && (
+                      {bill.etat === BillStatus.en_pleniere && (
                         <Vote className="h-5 w-5 text-orange-600" />
                       )}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm">{bill.title}</h4>
+                      <h4 className="font-medium text-sm">{bill.sujet}</h4>
                       <p className="text-xs text-gray-600">
-                        Par {bill.authorName}
+                        Par {bill.author_name}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {format(new Date(bill.updatedAt), "dd MMM yyyy", {
+                        {format(new Date(bill.date_depot), "dd MMM yyyy", {
                           locale: fr,
                         })}
                       </p>
                     </div>
-                    <Badge className={getStatusColor(bill.status)}>
-                      {getStatusDisplayName(bill.status)}
+                    <Badge className={getStatusColor(bill.etat)}>
+                      {getStatusDisplayName(bill.etat)}
                     </Badge>
                   </div>
                 ))
@@ -396,11 +404,11 @@ const PresidentDashboard = () => {
                     className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div className="flex-1">
-                      <h4 className="font-medium text-sm">{bill.title}</h4>
+                      <h4 className="font-medium text-sm">{bill.sujet}</h4>
                       <p className="text-xs text-gray-600">
-                        Par {bill.authorName}
+                        Par {bill.author_name}
                       </p>
-                      {bill.studyBureauAnalysis && (
+                      {bill.study_bureau_analysis && (
                         <p className="text-xs text-green-600 mt-1">
                           ✓ Analysée par le Bureau d'Études
                         </p>

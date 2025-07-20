@@ -69,7 +69,7 @@ const RapporteurDashboard = () => {
   );
   const unreadNotifications = myNotifications.filter((n) => !n.isRead);
   const sentConvocations = notifications.filter((n) =>
-    n.metadata?.sender?.includes(user?.firstName || ""),
+    n.metadata?.sender?.includes(user?.nom || ""),
   );
 
   const handleSendConvocation = () => {
@@ -82,8 +82,8 @@ const RapporteurDashboard = () => {
         message: convocationData.message,
         isRead: false,
         metadata: {
-          meetingDate: new Date(convocationData.meetingDate),
-          sender: `${user?.firstName} ${user?.lastName}`,
+          meetingDate: new Date(convocationData.meetingDate).toISOString(),
+          sender: `${user?.nom} ${user?.postnom}`,
         },
       });
     });
@@ -113,16 +113,28 @@ const RapporteurDashboard = () => {
       });
     }
   };
-
+  enum BillStatus {
+    en_cabinet = 0,
+    au_bureau_etudes = 1,
+    en_conference = 2,
+    validee = 3,
+    en_pleniere = 4,
+    adoptee = 5,
+    rejetee = 6,
+    declassee = 7,
+  }
+  
   const recentBills = bills
-    .filter((b) =>
-      ["en_conference", "au_bureau_etudes", "validee"].includes(b.status),
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    )
-    .slice(0, 5);
+  .filter((b) =>
+    [BillStatus.en_conference, BillStatus.au_bureau_etudes, BillStatus.validee].includes(b.etat)
+  )
+  .sort((a, b) => {
+    const dateB = b.dateModification ? new Date(b.dateModification).getTime() : 0;
+    const dateA = a.dateModification ? new Date(a.dateModification).getTime() : 0;
+    return dateB - dateA;
+  })
+
+  
 
   return (
     <div className="space-y-6">
@@ -226,8 +238,8 @@ const RapporteurDashboard = () => {
                           htmlFor={deputy.id}
                           className="flex-1 cursor-pointer"
                         >
-                          {deputy.firstName} {deputy.lastName} -{" "}
-                          {deputy.parlementaryGroup}
+                          {deputy.nom} {deputy.postnom} -{" "}
+                          {deputy.groupe_parlementaire}
                         </Label>
                       </div>
                     ))}
@@ -332,7 +344,7 @@ const RapporteurDashboard = () => {
               <Users className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <div className="text-2xl font-bold">
-                  {deputies.filter((d) => d.isActive).length}
+                  {deputies.filter((d) => d.statut).length}
                 </div>
                 <p className="text-xs text-gray-600">à coordonner</p>
               </div>
@@ -447,40 +459,55 @@ const RapporteurDashboard = () => {
                   <div key={bill.id} className="p-3 border rounded-lg">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{bill.title}</h4>
+                        <h4 className="font-medium text-sm">{bill.sujet}</h4>
                         <p className="text-xs text-gray-600 mt-1">
-                          Par {bill.authorName}
+                          Par {bill.author_name}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           Mise à jour:{" "}
-                          {format(new Date(bill.updatedAt), "dd MMM yyyy", {
+                          {format(new Date(bill.dateModification), "dd MMM yyyy", {
                             locale: fr,
                           })}
                         </p>
                       </div>
+                      
                       <div className="flex flex-col items-end space-y-1">
-                        <Badge
-                          variant="outline"
-                          className={
-                            bill.status === "en_conference"
-                              ? "border-blue-200 text-blue-700"
-                              : bill.status === "au_bureau_etudes"
-                                ? "border-purple-200 text-purple-700"
-                                : "border-green-200 text-green-700"
-                          }
-                        >
-                          {bill.status === "en_conference" && (
-                            <Calendar className="mr-1 h-3 w-3" />
-                          )}
-                          {bill.status === "au_bureau_etudes" && (
-                            <Clock className="mr-1 h-3 w-3" />
-                          )}
-                          {bill.status === "validee" && (
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
-                          )}
-                          {bill.status.replace("_", " ")}
-                        </Badge>
-                      </div>
+  <Badge
+    variant="outline"
+    className={
+      bill.etat === BillStatus.en_conference
+        ? "border-blue-200 text-blue-700"
+        : bill.etat === BillStatus.au_bureau_etudes
+        ? "border-purple-200 text-purple-700"
+        : "border-green-200 text-green-700"
+    }
+  >
+    {bill.etat === BillStatus.en_conference && (
+      <Calendar className="mr-1 h-3 w-3" />
+    )}
+    {bill.etat === BillStatus.au_bureau_etudes && (
+      <Clock className="mr-1 h-3 w-3" />
+    )}
+    {bill.etat === BillStatus.validee && (
+      <CheckCircle2 className="mr-1 h-3 w-3" />
+    )}
+
+    {/* Affichage texte en remplaçant _ par espace */}
+    {(() => {
+      switch (bill.etat) {
+        case BillStatus.en_conference:
+          return "en conference";
+        case BillStatus.au_bureau_etudes:
+          return "au bureau etudes";
+        case BillStatus.validee:
+          return "validee";
+        default:
+          return "inconnu";
+      }
+    })()}
+  </Badge>
+</div>
+
                     </div>
                   </div>
                 ))

@@ -1,15 +1,24 @@
-export type UserRole = "depute" | "president" | "rapporteur" | "bureau_etudes";
+// frontend/src/types/auth.ts
+export type UserRole = 'député' | 'président' | 'rapporteur'| 'Conseiller principal';
+export type UserSexe = 'homme' | 'femme';
+export type Direction = 'Bureau' | 'bureau_etudes';
+export type UserCirconscription = 'Funa' | 'Mont Amba' | 'Lukunga' | 'Tshangu' | string;
+export type UserPostePartie = 'président' | 'secrétaire' | 'membre' | string;
 
 export interface User {
   id: string;
+  nom: string;
+  postnom: string;
+  prenom: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  sexe: UserSexe;
+  circonscription: UserCirconscription;
   role: UserRole;
-  parlementaryGroup?: string;
-  constituency?: "Funa" | "Mont Amba" | "Lukunga" | "Tshangu";
-  isActive: boolean;
-  avatarUrl?: string;
+  partie_politique: string;
+  poste_partie: UserPostePartie;
+  direction: string;
+  groupe_parlementaire: string;
+  statut: boolean;
 }
 
 export interface AuthState {
@@ -21,14 +30,4 @@ export interface AuthState {
 export interface LoginCredentials {
   email: string;
   password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  parlementaryGroup?: string;
-  constituency?: string;
 }

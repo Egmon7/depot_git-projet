@@ -1,119 +1,85 @@
 import { UserRole } from "@/types/auth";
 
 export const permissions = {
-  // Bill management
-  canProposeBill: (role: UserRole): boolean => {
-    return role === "depute";
-  },
-
-  canViewBillDetails: (role: UserRole): boolean => {
-    return true; // All roles can view bill details
-  },
-
-  canEditBill: (
-    role: UserRole,
-    billAuthorId: string,
-    userId: string,
-  ): boolean => {
-    return role === "depute" && billAuthorId === userId;
-  },
-
-  // Conference management
-  canValidateBills: (role: UserRole): boolean => {
-    return role === "president";
-  },
-
-  canAnalyzeBills: (role: UserRole): boolean => {
-    return role === "bureau_etudes";
-  },
-
-  // Plenary management
-  canStartPlenary: (role: UserRole): boolean => {
-    return role === "president";
-  },
-
-  canVoteInPlenary: (role: UserRole): boolean => {
-    return role === "depute";
-  },
-
-  // Convocation management
-  canSendConvocations: (role: UserRole): boolean => {
-    return role === "rapporteur" || role === "president";
-  },
-
-  canConvokeConference: (role: UserRole): boolean => {
-    return role === "president";
-  },
-
-  canConvokeRapporteur: (role: UserRole): boolean => {
-    return role === "president";
-  },
-
-  // Deputy management
-  canViewDeputies: (role: UserRole): boolean => {
-    return role === "president" || role === "rapporteur";
-  },
-
-  canViewStats: (role: UserRole): boolean => {
-    return role === "president" || role === "conference_presidents";
-  },
-
-  // Documents
-  canViewDocuments: (role: UserRole): boolean => {
-    return true; // All roles can view documents
-  },
-
-  canUploadDocuments: (role: UserRole): boolean => {
-    return role === "depute" || role === "bureau_etudes";
-  },
-
-  // Delegation
-  canDelegateToVicePresident: (role: UserRole): boolean => {
-    return role === "president";
-  },
+  canProposeBill: (role: UserRole): boolean => role === "député",
+  canViewBillDetails: (role: UserRole): boolean => true,
+  canEditBill: (role: UserRole, billAuthorId: string, userId: string): boolean =>
+    role === "député" && billAuthorId === userId,
+  canValidateBills: (role: UserRole): boolean => role === "président",
+  canAnalyzeBills: (role: UserRole, direction?: string): boolean =>
+    role === "Conseiller principal" || direction === "bureau_etudes",
+  canStartPlenary: (role: UserRole): boolean => role === "président",
+  canVoteInPlenary: (role: UserRole): boolean => role === "député",
+  canSendConvocations: (role: UserRole): boolean =>
+    role === "rapporteur" || role === "président",
+  canConvokeConference: (role: UserRole): boolean => role === "président",
+  canConvokeRapporteur: (role: UserRole): boolean => role === "président",
+  canViewDeputies: (role: UserRole): boolean =>
+    role === "président" || role === "rapporteur",
+  canViewStats: (role: UserRole): boolean =>
+    role === "président" || role === "rapporteur",
+  canViewDocuments: (role: UserRole): boolean => true,
+  canUploadDocuments: (role: UserRole): boolean =>
+    role === "député" || role === "rapporteur",
 };
 
 export const getRoleDisplayName = (role: UserRole): string => {
-  const roleNames = {
-    depute: "Député",
-    president: "Président",
+  const roleNames: Record<UserRole, string> = {
+    député: "Député",
+    président: "Président",
     rapporteur: "Rapporteur",
+    "Conseiller principal" : "Conseiller principal",
+   
   };
-
-  return roleNames[role];
+  return roleNames[role] || role;
 };
 
-export const getStatusDisplayName = (status: string): string => {
-  const statusNames = {
-    en_attente: "En attente",
-    en_conference: "En conférence",
-    au_bureau_etudes: "Au bureau d'études",
-    validee: "Validée",
-    declassee: "Déclassée",
-    en_pleniere: "En plénière",
-    votee: "Votée",
-    adoptee: "Adoptée",
-    rejetee: "Rejetée",
+export const getStatusDisplayName = (etat: number): string => {
+  const statusMap: { [key: number]: string } = {
+    0: "en_cabinet",
+    1: "au_bureau_etudes",
+    2: "en_conference",
+    3: "validee",
+    4: "en_pleniere",
+    5: "adoptee",
+    6: "rejetee",
+    7: "declassee",
   };
-
-  return statusNames[status as keyof typeof statusNames] || status;
+  const status = statusMap[etat] || "inconnu";
+  switch (status) {
+    case "en_attente": return "En attente";
+    case "en_conference": return "En conférence";
+    case "au_bureau_etudes": return "Au bureau d'études";
+    case "validee": return "Validée";
+    case "en_pleniere": return "En plénière";
+    case "adoptee": return "Adoptée";
+    case "rejetee": return "Rejetée";
+    case "declassee": return "Déclassée";
+    default: return "Inconnu";
+  }
 };
 
-export const getStatusColor = (status: string): string => {
-  const statusColors = {
-    en_attente: "bg-yellow-100 text-yellow-800",
-    en_conference: "bg-blue-100 text-blue-800",
-    au_bureau_etudes: "bg-purple-100 text-purple-800",
-    validee: "bg-green-100 text-green-800",
-    declassee: "bg-red-100 text-red-800",
-    en_pleniere: "bg-orange-100 text-orange-800",
-    votee: "bg-indigo-100 text-indigo-800",
-    adoptee: "bg-emerald-100 text-emerald-800",
-    rejetee: "bg-red-100 text-red-800",
+export const getStatusColor = (etat: number): string => {
+  const statusMap: { [key: number]: string } = {
+    0: "en_cabinet",
+    1: "au_bureau_etudes",
+    2: "en_conference",
+    3: "validee",
+    4: "en_pleniere",
+    5: "adoptee",
+    6: "rejetee",
+    7: "declassee",
   };
-
-  return (
-    statusColors[status as keyof typeof statusColors] ||
-    "bg-gray-100 text-gray-800"
-  );
+  const status = statusMap[etat] || "inconnu";
+  switch (status) {
+    case "en_cabinet": return "bg-yellow-100 text-yellow-800";
+    case "en_conference": return "bg-blue-100 text-blue-800";
+    case "au_bureau_etudes": return "bg-purple-100 text-purple-800";
+    case "validee": return "bg-green-100 text-green-800";
+    case "en_pleniere": return "bg-orange-100 text-orange-800";
+    case "adoptee": return "bg-emerald-100 text-emerald-800";
+    case "rejetee": return "bg-gray-600 text-white";
+    case "declassee": return "bg-gray-500 text-white";
+    default: return "bg-gray-100 text-gray-800";
+  }
 };

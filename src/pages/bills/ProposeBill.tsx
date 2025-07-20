@@ -1,7 +1,9 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLegislative } from "@/contexts/LegislativeContext";
+import { Bill } from "@/types/legislative";
 import {
   Card,
   CardContent,
@@ -12,103 +14,87 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  FileText,
-  Send,
-  ArrowLeft,
-  Upload,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Send, FileText, Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { permissions } from "@/utils/permissions";
 
 const ProposeBill = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { proposeBill } = useLegislative();
 
-  const [formData, setFormData] = useState({
-    title: "",
-    subject: "",
-    motives: "",
+  const [formData, setFormData] = useState<{
+    sujet: string;
+    code: string;
+    exposer: string;
+    pieceFile?: File;
+  }>({
+    sujet: "",
+    code: "",
+    exposer: "",
+    pieceFile: undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setAttachments((prev) => [...prev, ...files]);
-  };
-
-  const removeAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = "Le titre est obligatoire";
-    } else if (formData.title.trim().length < 10) {
-      newErrors.title = "Le titre doit contenir au moins 10 caractères";
-    }
-
-    if (!formData.subject.trim()) {
-      newErrors.subject = "Le sujet est obligatoire";
-    }
-
-    if (!formData.motives.trim()) {
-      newErrors.motives = "L'exposé des motifs est obligatoire";
-    } else if (formData.motives.trim().length < 50) {
-      newErrors.motives =
-        "L'exposé des motifs doit contenir au moins 50 caractères";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setFormData((prev) => ({ ...prev, pieceFile: file }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour proposer une loi.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    if (!validateForm()) {
+    if (!permissions.canProposeBill(user.role)) {
+      toast({
+        title: "Erreur",
+        description: "Vous n'avez pas la permission de proposer une loi.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.sujet || !formData.code || !formData.exposer) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      // Convert files to attachment objects (in real app, would upload to server)
-      const fileAttachments = attachments.map((file, index) => ({
-        id: `${Date.now()}_${index}`,
-        name: file.name,
-        url: URL.createObjectURL(file),
-        size: file.size,
-        type: file.type,
-      }));
-
-      proposeBill({
-        title: formData.title.trim(),
-        subject: formData.subject.trim(),
-        motives: formData.motives.trim(),
-        attachments: fileAttachments,
+      await proposeBill({
+        sujet: formData.sujet,
+        code: formData.code,
+        exposer: formData.exposer,
+        pieceFile: formData.pieceFile,
       });
       toast({
-        title: "Proposition déposée",
-        description:
-          "Votre proposition de loi a été déposée avec succès et sera examinée par la conférence des présidents.",
+        title: "Succès",
+        description: "Proposition de loi déposée avec succès.",
       });
-
-      navigate("/dashboard");
-    } catch (error) {
+      navigate("/dashboard/my-bills");
+    } catch (err) {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors du dépôt de la proposition.",
+        description: "Une erreur s'est produite lors du dépôt de la proposition.",
         variant: "destructive",
       });
     } finally {
@@ -122,250 +108,102 @@ const ProposeBill = () => {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/dashboard/my-bills")}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Proposer une nouvelle loi
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Proposer une loi</h1>
           <p className="text-gray-600 mt-1">
-            Déposez votre proposition pour examen par l'assemblée
+            Remplissez les informations ci-dessous pour soumettre une nouvelle proposition de loi.
           </p>
         </div>
       </div>
 
-      {/* Guidelines */}
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Assurez-vous que votre proposition est complète et bien documentée.
-          Elle sera d'abord examinée par la Conférence des Présidents, puis
-          analysée par le Bureau d'Études avant d'être soumise au vote en
-          plénière.
-        </AlertDescription>
-      </Alert>
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Main Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
-              Informations de la proposition
-            </CardTitle>
-            <CardDescription>
-              Complétez tous les champs obligatoires pour déposer votre
-              proposition
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Titre de la proposition *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                placeholder="Ex: Loi sur la protection de l'environnement en milieu urbain"
-                className={errors.title ? "border-red-500" : ""}
-              />
-            </div>
-
-            {/* Subject */}
-            <div className="space-y-2">
-              <Label htmlFor="subject">Domaine/Sujet *</Label>
-              <Input
-                id="subject"
-                value={formData.subject}
-                onChange={(e) => handleInputChange("subject", e.target.value)}
-                placeholder="Ex: Environnement, Éducation, Santé, Justice..."
-                className={errors.subject ? "border-red-500" : ""}
-              />
-            </div>
-
-            {/* Motives */}
-            <div className="space-y-2">
-              <Label htmlFor="motives">Exposé des motifs *</Label>
-              <Textarea
-                id="motives"
-                value={formData.motives}
-                onChange={(e) => handleInputChange("motives", e.target.value)}
-                placeholder="Développez les raisons qui justifient cette proposition de loi, son contexte, ses objectifs et son impact attendu..."
-                rows={8}
-                className={errors.motives ? "border-red-500" : ""}
-              />
-            </div>
-            <div>
-              <Input
-                type="file"
-                multiple
-                accept=".pdf,.doc,.docx,.txt"
-                onChange={handleFileUpload}
-                className="cursor-pointer"
-              />
-              <p className="text-xs text-gray-600 mt-1">
-                Formats acceptés: PDF, DOC, DOCX, TXT (max 10 MB par fichier)
-              </p>
-            </div>
-
-            {attachments.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Fichiers attachés:</h4>
-                {attachments.map((file, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-2 border rounded"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <FileText className="h-4 w-4 text-gray-600" />
-                      <span className="text-sm">{file.name}</span>
-                      <span className="text-xs text-gray-500">
-                        ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                      </span>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeAttachment(index)}
-                    >
-                      Supprimer
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Author Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Informations du proposant</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium">Nom complet</Label>
-                <p className="text-sm text-gray-700">
-                  {user?.firstName} {user?.lastName}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">
-                  Groupe parlementaire
-                </Label>
-                <p className="text-sm text-gray-700">
-                  {user?.parlementaryGroup || "Non défini"}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Circonscription</Label>
-                <p className="text-sm text-gray-700">
-                  {user?.constituency || "Non définie"}
-                </p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Date de dépôt</Label>
-                <p className="text-sm text-gray-700">
-                  {new Date().toLocaleDateString("fr-FR")}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Submit */}
-        <div className="flex justify-end space-x-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => navigate("/dashboard")}
-          >
-            Annuler
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Dépôt en cours...
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Déposer la proposition
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
-
-      {/* Process Information */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <CheckCircle2 className="mr-2 h-5 w-5 text-blue-600" />
-            Processus après dépôt
+            <FileText className="mr-2 h-5 w-5" />
+            Nouvelle proposition de loi
           </CardTitle>
+          <CardDescription>
+            Complétez le formulaire pour déposer votre proposition.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-semibold text-blue-600">1</span>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm">
-                  Examen en Conférence des Présidents
-                </h4>
-                <p className="text-xs text-gray-600">
-                  Votre proposition sera examinée et soit validée, soit
-                  déclassée
-                </p>
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="sujet">Sujet de la loi</Label>
+              <Input
+                id="sujet"
+                name="sujet"
+                value={formData.sujet}
+                onChange={handleInputChange}
+                placeholder="Entrez le sujet de la proposition"
+                required
+              />
             </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-semibold text-blue-600">2</span>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm">
-                  Analyse par le Bureau d'Études
-                </h4>
-                <p className="text-xs text-gray-600">
-                  Étude technique du fond et de la forme de la proposition
-                </p>
-              </div>
+            <div>
+              <Label htmlFor="code">Code de la loi</Label>
+              <Input
+                id="code"
+                name="code"
+                value={formData.code}
+                onChange={handleInputChange}
+                placeholder="Entrez le code de la proposition (ex. LOI-2025-001)"
+                required
+              />
             </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-semibold text-blue-600">3</span>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm">Deuxième Conférence</h4>
-                <p className="text-xs text-gray-600">
-                  Fixation de la date de plénière selon les résultats de
-                  l'analyse
-                </p>
-              </div>
+            <div>
+              <Label htmlFor="exposer">Exposé des motifs</Label>
+              <Textarea
+                id="exposer"
+                name="exposer"
+                value={formData.exposer}
+                onChange={handleInputChange}
+                placeholder="Décrivez les motifs et objectifs de la proposition"
+                rows={6}
+                required
+              />
             </div>
-
-            <div className="flex items-start space-x-3">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-xs font-semibold text-blue-600">4</span>
+            <div>
+              <Label htmlFor="piece">Pièce jointe (optionnel)</Label>
+              <div className="flex items-center space-x-4">
+                <Input
+                  id="piece"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+                {formData.pieceFile && (
+                  <span className="text-sm text-gray-600">
+                    {formData.pieceFile.name}
+                  </span>
+                )}
               </div>
-              <div>
-                <h4 className="font-medium text-sm">Vote en Plénière</h4>
-                <p className="text-xs text-gray-600">
-                  Vote final de tous les députés pour adoption ou rejet
-                </p>
-              </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Formats acceptés : PDF, DOC, DOCX (max 5MB)
+              </p>
             </div>
-          </div>
+            <div className="flex justify-end space-x-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/dashboard/my-bills")}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {isSubmitting ? "Envoi en cours..." : "Déposer la proposition"}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

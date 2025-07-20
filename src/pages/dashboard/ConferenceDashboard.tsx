@@ -28,12 +28,22 @@ import {
   Clock,
   Eye,
   Calendar,
-  User,
   AlertTriangle,
 } from "lucide-react";
 import { getStatusDisplayName, getStatusColor } from "@/utils/permissions";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+
+enum BillStatus {
+  en_cabinet = 0,
+  au_bureau_etudes = 1,
+  en_conference = 2,
+  validee = 3,
+  en_pleniere = 4,
+  adoptee = 5,
+  rejetee = 6,
+  declassee = 7,
+}
 
 const ConferenceDashboard = () => {
   const { user } = useAuth();
@@ -43,21 +53,20 @@ const ConferenceDashboard = () => {
   const [decisionDialog, setDecisionDialog] = useState(false);
   const [observations, setObservations] = useState("");
 
-  // Bills waiting for conference decision
   const billsToReview = bills.filter((b) =>
-    ["en_attente", "en_conference"].includes(b.status),
+    [BillStatus.en_cabinet, BillStatus.en_conference].includes(b.etat)
   );
 
   // Bills already decided by conference
-  const decidedBills = bills.filter((b) => b.conferenceDecision);
+  const decidedBills = bills.filter((b) => b.conference_decision);
 
   const handleDecision = (
     billId: string,
-    decision: "valider" | "declasser",
+    decision: "valider" | "declasser"
   ) => {
     validateBill(billId, decision, observations);
     if (decision === "valider") {
-      updateBillStatus(billId, "au_bureau_etudes");
+      updateBillStatus(billId, BillStatus.au_bureau_etudes);
     }
     setDecisionDialog(false);
     setSelectedBill(null);
@@ -70,11 +79,12 @@ const ConferenceDashboard = () => {
 
   const stats = {
     total: billsToReview.length,
-    enAttente: bills.filter((b) => b.status === "en_attente").length,
-    validees: bills.filter((b) => b.conferenceDecision?.decision === "valider")
-      .length,
+    enAttente: bills.filter((b) => b.etat === BillStatus.en_cabinet).length,
+    validees: bills.filter(
+      (b) => b.conference_decision?.decision === "valider"
+    ).length,
     declassees: bills.filter(
-      (b) => b.conferenceDecision?.decision === "declasser",
+      (b) => b.conference_decision?.decision === "declasser"
     ).length,
   };
 
@@ -94,6 +104,8 @@ const ConferenceDashboard = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* ... cartes statistiques (identiques à ton code) */}
+        {/* À examiner */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -110,7 +122,7 @@ const ConferenceDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
+        {/* Total à traiter */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -127,7 +139,7 @@ const ConferenceDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
+        {/* Validées */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -144,7 +156,7 @@ const ConferenceDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
+        {/* Déclassées */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -164,12 +176,11 @@ const ConferenceDashboard = () => {
       </div>
 
       {/* Bills to Review */}
+      
       <Card>
         <CardHeader>
           <CardTitle>Propositions à examiner</CardTitle>
-          <CardDescription>
-            Lois nécessitant une décision de la conférence
-          </CardDescription>
+          <CardDescription>Lois nécessitant une décision de la conférence</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -178,38 +189,32 @@ const ConferenceDashboard = () => {
                 <div key={bill.id} className="border rounded-lg p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">
-                        {bill.title}
-                      </h3>
+                      <h3 className="font-semibold text-lg mb-2">{bill.sujet}</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                           <p className="text-sm text-gray-600">
-                            <strong>Sujet:</strong> {bill.subject}
+                            <strong>Sujet:</strong> {bill.sujet}
                           </p>
                           <p className="text-sm text-gray-600">
-                            <strong>Auteur:</strong> {bill.authorName}
+                            <strong>Auteur:</strong> {bill.author_name}
                           </p>
                           <p className="text-sm text-gray-600">
                             <strong>Déposée le:</strong>{" "}
-                            {format(new Date(bill.createdAt), "dd MMM yyyy", {
+                            {format(new Date(bill.date_depot), "dd MMM yyyy", {
                               locale: fr,
                             })}
                           </p>
                         </div>
                         <div>
-                          <Badge className={getStatusColor(bill.status)}>
-                            {getStatusDisplayName(bill.status)}
+                          <Badge className={getStatusColor(bill.etat)}>
+                            {getStatusDisplayName(bill.etat)}
                           </Badge>
                         </div>
                       </div>
 
                       <div className="mb-4">
-                        <h4 className="font-medium text-sm mb-2">
-                          Exposé des motifs:
-                        </h4>
-                        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                          {bill.motives}
-                        </p>
+                        <h4 className="font-medium text-sm mb-2">Exposé des motifs:</h4>
+                        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">{bill.exposer}</p>
                       </div>
 
                       <div className="flex space-x-3">
@@ -237,43 +242,32 @@ const ConferenceDashboard = () => {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>
-                                Décision de la conférence
-                              </DialogTitle>
+                              <DialogTitle>Décision de la conférence</DialogTitle>
                               <DialogDescription>
-                                Valider ou déclasser la proposition:{" "}
-                                {bill.title}
+                                Valider ou déclasser la proposition: {bill.sujet}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4">
                               <div>
-                                <Label htmlFor="observations">
-                                  Observations (optionnel)
-                                </Label>
+                                <Label htmlFor="observations">Observations (optionnel)</Label>
                                 <Textarea
                                   id="observations"
                                   value={observations}
-                                  onChange={(e) =>
-                                    setObservations(e.target.value)
-                                  }
+                                  onChange={(e) => setObservations(e.target.value)}
                                   placeholder="Commentaires ou justifications de la décision..."
                                   rows={3}
                                 />
                               </div>
                               <div className="flex space-x-3">
                                 <Button
-                                  onClick={() =>
-                                    handleDecision(bill.id, "valider")
-                                  }
+                                  onClick={() => handleDecision(bill.id, "valider")}
                                   className="flex-1 bg-green-600 hover:bg-green-700"
                                 >
                                   <CheckCircle className="mr-2 h-4 w-4" />
                                   Valider
                                 </Button>
                                 <Button
-                                  onClick={() =>
-                                    handleDecision(bill.id, "declasser")
-                                  }
+                                  onClick={() => handleDecision(bill.id, "declasser")}
                                   variant="destructive"
                                   className="flex-1"
                                 >
@@ -296,8 +290,7 @@ const ConferenceDashboard = () => {
                   Aucune proposition à examiner
                 </h3>
                 <p className="text-gray-600">
-                  Toutes les propositions ont été traitées ou aucune nouvelle
-                  proposition n'a été déposée.
+                  Toutes les propositions ont été traitées ou aucune nouvelle proposition n'a été déposée.
                 </p>
               </div>
             )}
@@ -309,9 +302,7 @@ const ConferenceDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle>Historique des décisions</CardTitle>
-          <CardDescription>
-            Propositions déjà examinées par la conférence
-          </CardDescription>
+          <CardDescription>Propositions déjà examinées par la conférence</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -322,14 +313,11 @@ const ConferenceDashboard = () => {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm">{bill.title}</h4>
-                    <p className="text-xs text-gray-600">
-                      Par {bill.authorName}
-                    </p>
-                    {bill.conferenceDecision?.observations && (
+                    <h4 className="font-medium text-sm">{bill.sujet}</h4>
+                    <p className="text-xs text-gray-600">Par {bill.author_name}</p>
+                    {bill.conference_decision?.observations && (
                       <p className="text-xs text-gray-500 mt-1">
-                        <strong>Observations:</strong>{" "}
-                        {bill.conferenceDecision.observations}
+                        <strong>Observations:</strong> {bill.conference_decision.observations}
                       </p>
                     )}
                   </div>
@@ -337,12 +325,12 @@ const ConferenceDashboard = () => {
                     <div className="text-right">
                       <Badge
                         className={
-                          bill.conferenceDecision?.decision === "valider"
+                          bill.conference_decision?.decision === "valider"
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
                         }
                       >
-                        {bill.conferenceDecision?.decision === "valider" ? (
+                        {bill.conference_decision?.decision === "valider" ? (
                           <>
                             <CheckCircle className="mr-1 h-3 w-3" />
                             Validée
@@ -354,13 +342,9 @@ const ConferenceDashboard = () => {
                           </>
                         )}
                       </Badge>
-                      {bill.conferenceDecision?.date && (
+                      {bill.conference_decision?.date && (
                         <p className="text-xs text-gray-500 mt-1">
-                          {format(
-                            new Date(bill.conferenceDecision.date),
-                            "dd MMM yyyy",
-                            { locale: fr },
-                          )}
+                          {format(new Date(bill.conference_decision.date), "dd MMM yyyy", { locale: fr })}
                         </p>
                       )}
                     </div>
@@ -370,9 +354,7 @@ const ConferenceDashboard = () => {
             ) : (
               <div className="text-center py-6">
                 <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  Aucune décision prise pour le moment
-                </p>
+                <p className="text-gray-600">Aucune décision prise pour le moment</p>
               </div>
             )}
           </div>
@@ -381,24 +363,17 @@ const ConferenceDashboard = () => {
 
       {/* Bill Detail Modal */}
       {selectedBill && !decisionDialog && (
-        <Dialog
-          open={!!selectedBill}
-          onOpenChange={() => setSelectedBill(null)}
-        >
+        <Dialog open={!!selectedBill} onOpenChange={() => setSelectedBill(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{selectedBill.title}</DialogTitle>
-              <DialogDescription>
-                Proposition de loi par {selectedBill.authorName}
-              </DialogDescription>
+              <DialogTitle>{selectedBill.sujet}</DialogTitle>
+              <DialogDescription>Proposition de loi par {selectedBill.author_name}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium">Sujet</Label>
-                  <p className="text-sm text-gray-700">
-                    {selectedBill.subject}
-                  </p>
+                  <p className="text-sm text-gray-700">{selectedBill.sujet}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Statut</Label>
@@ -409,90 +384,29 @@ const ConferenceDashboard = () => {
                 <div>
                   <Label className="text-sm font-medium">Date de dépôt</Label>
                   <p className="text-sm text-gray-700">
-                    {format(
-                      new Date(selectedBill.createdAt),
-                      "dd MMMM yyyy à HH:mm",
-                      { locale: fr },
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">
-                    Dernière mise à jour
-                  </Label>
-                  <p className="text-sm text-gray-700">
-                    {format(
-                      new Date(selectedBill.updatedAt),
-                      "dd MMMM yyyy à HH:mm",
-                      { locale: fr },
-                    )}
+                    {format(new Date(selectedBill.date_depot), "dd MMMM yyyy à HH:mm", { locale: fr })}
                   </p>
                 </div>
               </div>
-
               <div>
                 <Label className="text-sm font-medium">Exposé des motifs</Label>
                 <div className="bg-gray-50 p-4 rounded-lg mt-2">
-                  <p className="text-sm text-gray-700">
-                    {selectedBill.motives}
-                  </p>
+                  <p className="text-sm text-gray-700">{selectedBill.exposer}</p>
                 </div>
               </div>
-
-              {selectedBill.attachments &&
-                selectedBill.attachments.length > 0 && (
-                  <div>
-                    <Label className="text-sm font-medium">
-                      Pièces jointes
-                    </Label>
-                    <div className="space-y-2 mt-2">
-                      {selectedBill.attachments.map(
-                        (attachment: any, index: number) => (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-2 p-2 border rounded"
-                          >
-                            <FileText className="h-4 w-4 text-gray-600" />
-                            <span className="text-sm">{attachment.name}</span>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
-
-              {selectedBill.conferenceDecision && (
-                <div className="border-t pt-4">
-                  <Label className="text-sm font-medium">
-                    Décision de la conférence
-                  </Label>
-                  <div className="mt-2 p-3 bg-gray-50 rounded">
-                    <div className="flex items-center space-x-2 mb-2">
-                      {selectedBill.conferenceDecision.decision ===
-                      "valider" ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-600" />
-                      )}
-                      <span className="font-medium">
-                        {selectedBill.conferenceDecision.decision === "valider"
-                          ? "Validée"
-                          : "Déclassée"}
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        le{" "}
-                        {format(
-                          new Date(selectedBill.conferenceDecision.date),
-                          "dd MMM yyyy",
-                          { locale: fr },
-                        )}
-                      </span>
-                    </div>
-                    {selectedBill.conferenceDecision.observations && (
-                      <p className="text-sm text-gray-700">
-                        {selectedBill.conferenceDecision.observations}
-                      </p>
-                    )}
+              {/* Pièces jointes si présentes */}
+              {selectedBill.piece && (
+                <div>
+                  <Label className="text-sm font-medium">Pièce jointe</Label>
+                  <div className="mt-2">
+                    <a
+                      href={selectedBill.piece}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      Télécharger la pièce jointe
+                    </a>
                   </div>
                 </div>
               )}

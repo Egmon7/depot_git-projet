@@ -49,12 +49,22 @@ const StudyBureauDashboard = () => {
     isOriginal: false,
     observations: "",
   });
-
+  enum BillStatus {
+    en_cabinet = 0,
+    au_bureau_etudes = 1,
+    en_conference = 2,
+    validee = 3,
+    en_pleniere = 4,
+    adoptee = 5,
+    rejetee = 6,
+    declassee = 7,
+  }
   // Bills assigned to study bureau
-  const billsToAnalyze = bills.filter((b) => b.status === "au_bureau_etudes");
+  const billsToAnalyze = bills.filter((b) => b.etat === BillStatus.au_bureau_etudes);
+
 
   // Bills already analyzed
-  const analyzedBills = bills.filter((b) => b.studyBureauAnalysis);
+  const analyzedBills = bills.filter((b) => b.study_bureau_analysis);
 
   const handleSubmitAnalysis = (billId: string) => {
     const analysis = {
@@ -66,13 +76,13 @@ const StudyBureauDashboard = () => {
     // Notify rapporteur about completed analysis
     addNotification({
       recipientId: "3", // Rapporteur ID
-      type: "general",
+      type: "bureau_etudes",
       title: "Analyse du Bureau d'Études terminée",
       message: `L'analyse de la loi "${selectedBill?.title}" est terminée et prête pour la deuxième conférence.`,
       isRead: false,
       metadata: {
         billId,
-        sender: `${user?.firstName} ${user?.lastName}`,
+        sender: `${user?.nom} ${user?.postnom}`,
       },
     });
 
@@ -102,12 +112,10 @@ const StudyBureauDashboard = () => {
   const stats = {
     toAnalyze: billsToAnalyze.length,
     analyzed: analyzedBills.length,
-    legallyCorrect: analyzedBills.filter(
-      (b) => b.studyBureauAnalysis?.isLegallyCorrect,
-    ).length,
-    original: analyzedBills.filter((b) => b.studyBureauAnalysis?.isOriginal)
-      .length,
+    legallyCorrect: analyzedBills.filter(b => !!b.study_bureau_analysis).length,
+    original: analyzedBills.filter(b => !!b.study_bureau_analysis).length,
   };
+  
 
   return (
     <div className="space-y-6">
@@ -211,33 +219,33 @@ const StudyBureauDashboard = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-2">
-                        {bill.title}
+                        {bill.sujet}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                           <p className="text-sm text-gray-600">
-                            <strong>Sujet:</strong> {bill.subject}
+                            <strong>Sujet:</strong> {bill.sujet}
                           </p>
                           <p className="text-sm text-gray-600">
-                            <strong>Auteur:</strong> {bill.authorName}
+                            <strong>Auteur:</strong> {bill.author_name}
                           </p>
                           <p className="text-sm text-gray-600">
                             <strong>Assignée le:</strong>{" "}
-                            {format(new Date(bill.updatedAt), "dd MMM yyyy", {
+                            {format(new Date(bill.dateModification), "dd MMM yyyy", {
                               locale: fr,
                             })}
                           </p>
                         </div>
                         <div>
-                          <Badge className={getStatusColor(bill.status)}>
-                            {getStatusDisplayName(bill.status)}
+                          <Badge className={getStatusColor(bill.etat)}>
+                            {getStatusDisplayName(bill.etat)}
                           </Badge>
-                          {bill.conferenceDecision && (
+                          {bill.conference_decision && (
                             <div className="mt-2">
                               <p className="text-xs text-green-600">
                                 ✓ Validée en conférence le{" "}
                                 {format(
-                                  new Date(bill.conferenceDecision.date),
+                                  new Date(bill.conference_decision.date),
                                   "dd MMM",
                                   { locale: fr },
                                 )}
@@ -252,7 +260,7 @@ const StudyBureauDashboard = () => {
                           Exposé des motifs:
                         </h4>
                         <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                          {bill.motives}
+                          {bill.exposer}
                         </p>
                       </div>
 
@@ -514,22 +522,22 @@ const StudyBureauDashboard = () => {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm">{bill.title}</h4>
+                    <h4 className="font-medium text-sm">{bill.sujet}</h4>
                     <p className="text-xs text-gray-600">
-                      Par {bill.authorName}
+                      Par {bill.author_name}
                     </p>
                     <div className="flex space-x-4 mt-1">
                       <span
-                        className={`text-xs ${bill.studyBureauAnalysis?.isLegallyCorrect ? "text-green-600" : "text-red-600"}`}
+                        className={`text-xs ${bill.study_bureau_analysis? "text-green-600" : "text-red-600"}`}
                       >
-                        {bill.studyBureauAnalysis?.isLegallyCorrect
+                        {bill.study_bureau_analysis
                           ? "✓ Juridiquement correcte"
                           : "✗ Problèmes juridiques"}
                       </span>
                       <span
-                        className={`text-xs ${bill.studyBureauAnalysis?.isOriginal ? "text-green-600" : "text-orange-600"}`}
+                        className={`text-xs ${bill.study_bureau_analysis.avis ? "text-green-600" : "text-orange-600"}`}
                       >
-                        {bill.studyBureauAnalysis?.isOriginal
+                        {bill.study_bureau_analysis.avis
                           ? "✓ Proposition originale"
                           : "⚠ Déjà déposée"}
                       </span>
@@ -542,10 +550,10 @@ const StudyBureauDashboard = () => {
                     >
                       Analysée
                     </Badge>
-                    {bill.studyBureauAnalysis?.date && (
+                    {bill.study_bureau_analysis?.date && (
                       <p className="text-xs text-gray-500 mt-1">
                         {format(
-                          new Date(bill.studyBureauAnalysis.date),
+                          new Date(bill.study_bureau_analysis.date),
                           "dd MMM yyyy",
                           { locale: fr },
                         )}

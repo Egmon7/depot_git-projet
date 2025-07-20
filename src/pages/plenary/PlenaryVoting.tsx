@@ -90,10 +90,10 @@ const PlenaryVoting = () => {
     non: votes.filter((v) => v.vote === "non").length,
     abstention: votes.filter((v) => v.vote === "abstention").length,
     total: votes.length,
-    remaining: deputies.filter((d) => d.isActive).length - votes.length,
+    remaining: deputies.filter((d) => d.statut).length - votes.length,
   };
 
-  const totalDeputies = deputies.filter((d) => d.isActive).length;
+  const totalDeputies = deputies.filter((d) => d.statut).length;
   const participationRate =
     totalDeputies > 0 ? (voteStats.total / totalDeputies) * 100 : 0;
 
@@ -172,23 +172,25 @@ const PlenaryVoting = () => {
             <CardContent className="space-y-4">
               <div>
                 <h2 className="text-xl font-semibold mb-2">
-                  {currentBill.title}
+                  {currentBill.sujet}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium">Sujet:</span>{" "}
-                    {currentBill.subject}
+                    {currentBill.sujet}
                   </div>
                   <div>
-                    <span className="font-medium">Auteur:</span>{" "}
-                    {currentBill.authorName}
-                  </div>
-                  <div>
-                    <span className="font-medium">Déposée le:</span>{" "}
-                    {format(new Date(currentBill.createdAt), "dd MMMM yyyy", {
-                      locale: fr,
-                    })}
-                  </div>
+                <span className="font-medium">Auteur:</span>{" "}
+                  {currentBill.author_name}  // ✅ Correction
+                </div>
+
+                <div>
+  <span className="font-medium">Déposée le:</span>{" "}
+  {format(new Date(currentBill.date_depot), "dd MMMM yyyy", {
+    locale: fr,
+  })}
+</div>
+
                   <div>
                     <span className="font-medium">Statut:</span>
                     <Badge className="ml-2">En plénière</Badge>
@@ -199,45 +201,45 @@ const PlenaryVoting = () => {
               <div>
                 <h3 className="font-medium mb-2">Exposé des motifs:</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-700">{currentBill.motives}</p>
+                  <p className="text-sm text-gray-700">{currentBill.exposer}</p>
                 </div>
               </div>
 
-              {currentBill.studyBureauAnalysis && (
+              {currentBill.study_bureau_analysis && (
                 <div>
                   <h3 className="font-medium mb-2">
                     Résumé de l'analyse du Bureau d'Études:
                   </h3>
                   <div className="bg-blue-50 p-4 rounded-lg space-y-2">
                     <div className="flex items-center space-x-2">
-                      {currentBill.studyBureauAnalysis.isLegallyCorrect ? (
+                      {currentBill.study_bureau_analysis.avis === "Oui" ? (
                         <CheckCircle className="h-4 w-4 text-green-600" />
                       ) : (
                         <XCircle className="h-4 w-4 text-red-600" />
                       )}
                       <span className="text-sm">
-                        {currentBill.studyBureauAnalysis.isLegallyCorrect
+                        {currentBill.study_bureau_analysis.avis  === "Oui"
                           ? "Juridiquement correcte"
                           : "Problèmes juridiques identifiés"}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {currentBill.studyBureauAnalysis.isOriginal ? (
+                      {currentBill.study_bureau_analysis.avis === "Oui" ? (
                         <CheckCircle className="h-4 w-4 text-green-600" />
                       ) : (
                         <AlertCircle className="h-4 w-4 text-orange-600" />
                       )}
                       <span className="text-sm">
-                        {currentBill.studyBureauAnalysis.isOriginal
+                        {currentBill.study_bureau_analysis.avis  === "Oui"
                           ? "Proposition originale"
                           : "Similitudes avec propositions existantes"}
                       </span>
                     </div>
-                    {currentBill.studyBureauAnalysis.observations && (
+                    {currentBill.study_bureau_analysis.justification && (
                       <div className="mt-2">
                         <p className="text-sm text-gray-700">
                           <strong>Observations:</strong>{" "}
-                          {currentBill.studyBureauAnalysis.observations}
+                          {currentBill.study_bureau_analysis.date}
                         </p>
                       </div>
                     )}
@@ -256,7 +258,7 @@ const PlenaryVoting = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {user?.role === "depute" ? (
+              {user?.role === "député" ? (
                 <div className="space-y-4">
                   {existingVote ? (
                     <Alert>
